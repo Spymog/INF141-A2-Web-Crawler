@@ -3,8 +3,20 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
 def scraper(url, resp):
-    links = extract_next_links(url, resp)
-    return [link for link in links if is_valid(link)]
+    # # Base code for reference
+    # links = extract_next_links(url, resp)
+    # return [link for link in links if is_valid(link)]
+
+    # # *Experimental* - Another way to check http status code 
+    # if resp.status > 399: # If http status code is above 399, i.e. 400, 401, 403, 404, then the webpage could not be reached.
+    #     return list() # If webpage can't be reached, return empty list of links.
+
+    if resp.status == 200: # If http status code is 200 (normal response), then continue w/ scraping webpage
+        links = extract_next_links(url, resp) # Get all links from current url
+        return [link for link in links if is_valid(link)] # For each link, check if link will lead to a webpage, if so return it
+    else:
+        print(f"Can't read url: '{url}',\nError code: {resp.status_code}") # Error message if status code isn't 200
+    
 
 def extract_next_links(url, resp):
     # Implementation required.
@@ -16,9 +28,15 @@ def extract_next_links(url, resp):
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
-    with open("out.txt", "wb") as f:
-        f.write(resp.raw_response.content)
-    # print(resp.raw_response.content)
+
+    # Takes the raw response from the server and converts in into a Beautiful soup object, which can parse through the response and 
+    # allows easy access to certain parts of the html. BeautifulSoup = important part of being able to parse through the html, 
+    # but NOT the strings themselves
+    soup = BeautifulSoup(resp.raw_response.content, 'html.parser') 
+    
+    for tag in soup.find_all('a'): # Find all the a tags in the html 
+        hyperlink = tag.get('href') # Get the contents of the href attribute from each a tag
+        
     return list()
 
 def is_valid(url):
