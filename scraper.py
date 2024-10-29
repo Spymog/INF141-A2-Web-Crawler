@@ -1,6 +1,17 @@
 import re
+import os
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
+
+'''
+THINGS TO ANSWER:
+
+- Number of unique pages
+- Longest page in terms of number of words (HTML markup not counted)
+- 50 most common words in the entire set of pages (ignore english stop words: https://www.ranks.nl/stopwords)
+- How many subdomains were found in the uci.edu domain? Submit list of subdomains and number of unique pages in each subdomain
+'''
+
 
 def scraper(url, resp):
     # # Base code for reference
@@ -12,6 +23,8 @@ def scraper(url, resp):
     #     return list() # If webpage can't be reached, return empty list of links.
 
     if resp.status == 200: # If http status code is 200 (normal response), then continue w/ scraping webpage
+
+        os.getcwd
         links = extract_next_links(url, resp) # Get all links from current url
         return [link for link in links if is_valid(link)] # For each link, check if link will lead to a webpage, if so return it
     else:
