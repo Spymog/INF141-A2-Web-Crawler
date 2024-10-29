@@ -24,7 +24,7 @@ def scraper(url, resp):
 
     if resp.status == 200: # If http status code is 200 (normal response), then continue w/ scraping webpage
 
-        print(os.getcwd)
+        print('Current Working Directory: ', os.getcwd())
         links = extract_next_links(url, resp) # Get all links from current url
         return [link for link in links if is_valid(link)] # For each link, check if link will lead to a webpage, if so return it
     else:
