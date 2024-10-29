@@ -29,6 +29,7 @@ def scraper(url, resp):
         return [link for link in links if is_valid(link)] # For each link, check if link will lead to a webpage, if so return it
     else:
         print(f"Can't read url: '{url}',\nError code: {resp.status_code}") # Error message if status code isn't 200
+        raise
     
 
 def extract_next_links(url, resp):
