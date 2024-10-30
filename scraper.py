@@ -3,6 +3,8 @@ import os
 from urllib.parse import urlparse, urldefrag
 from bs4 import BeautifulSoup, SoupStrainer
 
+from tokenizer import tokenize
+
 '''
 THINGS TO ANSWER:
 
@@ -89,11 +91,26 @@ def extract_next_links(url, resp):
         if hyperlink: # Check if there is any contents taken from the tag
             raw_hyperlinks.add(hyperlink) # Add to set of raw hyperlinks
 
-    absolute_urls = list()
+    tokens = list(tokenize(soup.get_text()))
+    num_words = len(tokens)
+    with open('stats/longest_page.txt', 'r') as longest_page:
+        lines = longest_page.readlines()
+        # print(f"here is lines: {lines}")
+        storedMaxLen = int(lines[1].strip())
+        storedStr = lines[0].strip()
+        # print(f"this is num_words: {num_words}")
+
+        if storedStr == "None" or num_words > storedMaxLen:
+            with open('stats/longest_page.txt', 'w') as t:
+                t.write(f"{url}\n")
+                t.write(str(num_words))
+    
+    absolute_urls = set()
     # Convert raw hyperlink to absolute url
     for link in raw_hyperlinks:
-        processed_link = process_raw_hyperlink(link)
+        processed_link = process_raw_hyperlink(parsed_url, link)
         # TODO: write processed_link's URL only to a file so we can count it later
+        absolute_urls.add(processed_link)
         # TODO: use the soup to get all tokens (across all pages), and keep track of the page with the most number of words
         # TODO: using tokens, find 50 most common words
         # TODO: if processed_link is a new subdomain of uci.edu, add it to a file of subdomains. 
@@ -108,7 +125,7 @@ def extract_next_links(url, resp):
         # if current_parse.hostname:
 
     
-    return list()
+    return list(absolute_urls)
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 
