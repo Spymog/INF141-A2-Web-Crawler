@@ -1,7 +1,7 @@
 import re
 import os
-from urllib.parse import urlparse
-from bs4 import BeautifulSoup
+from urllib.parse import urlparse, urldefrag
+from bs4 import BeautifulSoup, SoupStrainer
 
 '''
 THINGS TO ANSWER:
@@ -23,14 +23,45 @@ def scraper(url, resp):
     #     return list() # If webpage can't be reached, return empty list of links.
 
     if resp.status == 200: # If http status code is 200 (normal response), then continue w/ scraping webpage
-
-        print('Current Working Directory: ', os.getcwd())
+        # print('Current Working Directory: ', os.getcwd()) # just checking what the current working directory is 
+        with open('answers/unique_pages.txt', 'a') as t:
+            if 'ics.uci.edu' in url:
+                t.write(f"{url}\n")
         links = extract_next_links(url, resp) # Get all links from current url
         return [link for link in links if is_valid(link)] # For each link, check if link will lead to a webpage, if so return it
     else:
         print(f"Can't read url: '{url}',\nError code: {resp.status_code}") # Error message if status code isn't 200
         raise
     
+def process_raw_hyperlink(url, hyperlink):
+    parsed_url = urlparse(url)
+    parsed_link = urlparse(hyperlink)
+
+    if not parsed_link.scheme:
+        parsed_link = parsed_link._replace(scheme=parsed_url.scheme)
+    elif parsed_link.scheme not in set(["http", "https"]):
+        return
+    
+    if not parsed_link.netloc:
+
+        if parsed_url.hostname in parsed_link.path:
+            new_path = parsed_link.path.replace(parsed_url.hostname, '', 1)
+            parsed_link = parsed_link._replace(netloc=parsed_url.hostname, path=new_path)
+        elif parsed_link.path.startswith('/'):
+            parsed_link = parsed_link._replace(netloc=parsed_url.hostname)
+        else:
+            current_path = parsed_url.hostname + '/' + parsed_url.path.lstrip('/')
+            parsed_link = parsed_link._replace(netloc=current_path)
+    else:
+        parsed_link = parsed_link._replace(netloc=parsed_link.hostname)
+
+    if parsed_link.path == '/':
+        parsed_link = parsed_link._replace(path='')
+
+    parsed_link = urlparse(urldefrag(parsed_link.geturl())[0])
+
+    return parsed_link.geturl()
+
 
 def extract_next_links(url, resp):
     # Implementation required.
@@ -43,14 +74,31 @@ def extract_next_links(url, resp):
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
 
+    parsed_url = urlparse(url)
+    raw_hyperlinks = set() # Set of scraped potential hyperlinks, have to process them to make sure they are crawlable
+
     # Takes the raw response from the server and converts in into a Beautiful soup object, which can parse through the response and 
     # allows easy access to certain parts of the html. BeautifulSoup = important part of being able to parse through the html, 
     # but NOT the strings themselves
+    # tag = SoupStrainer('a')
     soup = BeautifulSoup(resp.raw_response.content, 'html.parser') 
     
-    for tag in soup.find_all('a'): # Find all the a tags in the html 
+    # Find all the a tags in the html, add them to the set of raw hyperlinks  
+    for tag in soup.find_all('a'):
         hyperlink = tag.get('href') # Get the contents of the href attribute from each a tag
-        
+        if hyperlink: # Check if there is any contents taken from the tag
+            raw_hyperlinks.add(hyperlink) # Add to set of raw hyperlinks
+
+    absolute_urls = list()
+    # Convert raw hyperlink to absolute url
+    for link in raw_hyperlinks:
+        processed_link = process_raw_hyperlink(link)
+        # current_parse = urlparse(link)
+        # if not current_parse.scheme:
+        #     current_parse = current_parse._replace(scheme=f'{parsed_url.scheme}')
+        # if current_parse.hostname:
+
+    
     return list()
 
 def is_valid(url):
