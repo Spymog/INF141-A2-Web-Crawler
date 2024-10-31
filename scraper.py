@@ -2,7 +2,7 @@ import re
 import os
 import shelve
 from bs4 import BeautifulSoup, SoupStrainer
-from urllib.parse import urlparse, urldefrag
+from urllib.parse import urlparse, urldefrag, urljoin
 from tokenizer import tokenize
 
 '''
@@ -91,22 +91,14 @@ def extract_next_links(url, resp):
     # resp.raw_response: this is where the page actually is. More specifically, the raw_response has two parts:
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
-    # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
+    # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content    
 
-    parsed_url = urlparse(url)
-    raw_hyperlinks = set() # Set of scraped potential hyperlinks, have to process them to make sure they are crawlable
 
     # Takes the raw response from the server and converts in into a Beautiful soup object, which can parse through the response and 
     # allows easy access to certain parts of the html. BeautifulSoup = important part of being able to parse through the html, 
     # but NOT the strings themselves
     # tag = SoupStrainer('a')
     soup = BeautifulSoup(resp.raw_response.content, 'html.parser') 
-    
-    # Find all the a tags in the html, add them to the set of raw hyperlinks  
-    for tag in soup.find_all('a'):
-        hyperlink = tag.get('href') # Get the contents of the href attribute from each a tag
-        if hyperlink: # Check if there is any contents taken from the tag
-            raw_hyperlinks.add(hyperlink) # Add to set of raw hyperlinks
 
     # Extract the text of the current webpage and convert to tokens
     webpage_text = soup.get_text()
@@ -118,10 +110,19 @@ def extract_next_links(url, resp):
     # Count frequencies of all found tokens and update total count of all tokens
     update_token_counts(tokens)
 
-    absolute_urls = list()
-    # Convert raw hyperlink to absolute url
+    # Find all the a tags in the html, add them to the set of raw hyperlinks  
+    raw_hyperlinks = set() # Set of scraped potential hyperlinks, have to process them to make sure they are crawlable
+    for tag in soup.find_all('a'):
+        hyperlink = tag.get('href') # Get the contents of the href attribute from each a tag
+        if hyperlink: # Check if there is any contents taken from the tag
+            raw_hyperlinks.add(hyperlink) # Add to set of raw hyperlinks
+
+    absolute_links = list()
+    # Convert raw hyperlinks to absolute links
     for link in raw_hyperlinks:
-        processed_link = process_raw_hyperlink(link)
+        # processed_link = process_raw_hyperlink(url, link)
+        absolute_link = urljoin(url, link)
+        absolute_links.append(absolute_link)
         # TODO: write processed_link's URL only to a file so we can count it later
         # TODO: use the soup to get all tokens (across all pages), and keep track of the page with the most number of words
         # TODO: using tokens, find 50 most common words
@@ -130,14 +131,8 @@ def extract_next_links(url, resp):
             # vision.ics.uci.edu, 10
             # hearing.ics.uci.edu, 100
             # etc. 
-
-        # current_parse = urlparse(link)
-        # if not current_parse.scheme:
-        #     current_parse = current_parse._replace(scheme=f'{parsed_url.scheme}')
-        # if current_parse.hostname:
-
     
-    return list()
+    return absolute_links
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 
