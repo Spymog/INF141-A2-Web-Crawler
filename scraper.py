@@ -1,7 +1,9 @@
 import re
 import os
-from urllib.parse import urlparse, urldefrag
+import shelve
 from bs4 import BeautifulSoup, SoupStrainer
+from urllib.parse import urlparse, urldefrag
+from tokenizer import tokenize
 
 '''
 THINGS TO ANSWER:
@@ -62,6 +64,23 @@ def process_raw_hyperlink(url, hyperlink):
 
     return parsed_link.geturl()
 
+def find_longest(url:str, tokens:list):
+    token_count = len(tokens)
+
+    with open('answers/longest_page.txt', 'r') as current_longest:
+        lines = current_longest.readlines()
+        longest_count = int(lines[0])
+        longest_url = lines[1] # Maybe don't need
+
+        if token_count > longest_count:
+            with open('answers/longest_page.txt', 'w') as new_longest:
+                new_longest.write(f'{str(token_count)}\n{url}')
+
+def update_token_counts(tokens:list):
+    with shelve.open('answers/word_counts') as count:
+        for token in tokens:
+            count[token] = count.get(token, 0) + 1
+
 
 def extract_next_links(url, resp):
     # Implementation required.
@@ -88,6 +107,16 @@ def extract_next_links(url, resp):
         hyperlink = tag.get('href') # Get the contents of the href attribute from each a tag
         if hyperlink: # Check if there is any contents taken from the tag
             raw_hyperlinks.add(hyperlink) # Add to set of raw hyperlinks
+
+    # Extract the text of the current webpage and convert to tokens
+    webpage_text = soup.get_text()
+    tokens = tokenize(webpage_text)
+
+    # Get all tokens, use to find if current webpage currently has the most words
+    find_longest(url, tokens)
+    
+    # Count frequencies of all found tokens and update total count of all tokens
+    update_token_counts(tokens)
 
     absolute_urls = list()
     # Convert raw hyperlink to absolute url

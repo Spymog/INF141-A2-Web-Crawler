@@ -6,25 +6,20 @@ from collections import defaultdict
 # - We iterate in chunks, but the while loop will go through every character just once, which takes O(n) time, where n is the length of the list.
 #     - The other operations in the loop take O(1) time. 
 # - The total time compexity is O(n)
-def tokenize(text_file_path: str) -> list:
+def tokenize(text: str) -> list:
     tokens = []
     current_token = []
-    try:
-        with open(text_file_path, 'r', encoding="utf8") as file:
-            while chunk := file.read(4096):
-                for char in chunk:
-                    try:
-                        if char.isdigit() or ('a' <= char.lower() <= 'z'): # this line is from chatgpt, after asking how one might only count chars that are English alphabet and digits 0-9
-                            current_token.append(char)
-                        else:
-                            if current_token:
-                                tokens.append(''.join(current_token).lower())
-                                current_token.clear()
-                    except Exception:
-                        continue
-    except Exception as e:
-        print(f"An error occurred: {e}")
-
+    for char in text:
+        try:
+            if char.isdigit() or ('a' <= char.lower() <= 'z'): # this line is from chatgpt, after asking how one might only count chars that are English alphabet and digits 0-9
+                current_token.append(char)
+            else:
+                if current_token:
+                    tokens.append(''.join(current_token).lower())
+                    current_token.clear()
+        except Exception:
+            continue
+        
     # adding the last token (if it's real)
     if current_token:
         tokens.append(''.join(current_token).lower())
