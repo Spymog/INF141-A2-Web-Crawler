@@ -2,9 +2,8 @@ import re
 import os
 import shelve
 from bs4 import BeautifulSoup, SoupStrainer
-from urllib.parse import urlparse, urldefrag, urljoin
-from tokenizer import tokenize
 
+from urllib.parse import urlparse, urldefrag, urljoin
 from tokenizer import tokenize
 
 '''
@@ -119,33 +118,10 @@ def extract_next_links(url, resp):
         if hyperlink: # Check if there is any contents taken from the tag
             raw_hyperlinks.add(hyperlink) # Add to set of raw hyperlinks
 
-<<<<<<< HEAD
-    tokens = list(tokenize(soup.get_text()))
-    num_words = len(tokens)
-    with open('stats/longest_page.txt', 'r') as longest_page:
-        lines = longest_page.readlines()
-        # print(f"here is lines: {lines}")
-        storedMaxLen = int(lines[1].strip())
-        storedStr = lines[0].strip()
-        # print(f"this is num_words: {num_words}")
-
-        if storedStr == "None" or num_words > storedMaxLen:
-            with open('stats/longest_page.txt', 'w') as t:
-                t.write(f"{url}\n")
-                t.write(str(num_words))
-    
-    absolute_urls = set()
+    absolute_urls = list()
     # Convert raw hyperlink to absolute url
     for link in raw_hyperlinks:
-        processed_link = process_raw_hyperlink(parsed_url, link)
-=======
-    absolute_links = list()
-    # Convert raw hyperlinks to absolute links
-    for link in raw_hyperlinks:
-        # processed_link = process_raw_hyperlink(url, link)
-        absolute_link = urljoin(url, link)
-        absolute_links.append(absolute_link)
->>>>>>> 1e7d7c94c7e4e6825716287ef9446c085362eaac
+        processed_link = process_raw_hyperlink(link)
         # TODO: write processed_link's URL only to a file so we can count it later
         absolute_urls.add(processed_link)
         # TODO: use the soup to get all tokens (across all pages), and keep track of the page with the most number of words
@@ -155,12 +131,14 @@ def extract_next_links(url, resp):
             # vision.ics.uci.edu, 10
             # hearing.ics.uci.edu, 100
             # etc. 
+
+        # current_parse = urlparse(link)
+        # if not current_parse.scheme:
+        #     current_parse = current_parse._replace(scheme=f'{parsed_url.scheme}')
+        # if current_parse.hostname:
+
     
-<<<<<<< HEAD
-    return list(absolute_urls)
-=======
-    return absolute_links
->>>>>>> 1e7d7c94c7e4e6825716287ef9446c085362eaac
+    return list()
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 
