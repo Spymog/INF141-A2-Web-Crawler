@@ -27,6 +27,12 @@ def scraper(url, resp):
 
     if resp.status == 200: # If http status code is 200 (normal response), then continue w/ scraping webpage
         # print('Current Working Directory: ', os.getcwd()) # just checking what the current working directory is 
+        if not os.path.exists('answers/unique_pages.txt'):
+            # If it doesn't exist, create an empty file
+            os.makedirs('answers', exist_ok=True)  # Ensure the directory exists
+            with open('answers/unique_pages.txt', 'w') as t:
+                pass  # Create the file since 'a' doesn't do it for us. 
+        
         with open('answers/unique_pages.txt', 'a') as t:
             if 'ics.uci.edu' in url:
                 t.write(f"{url}\n")
