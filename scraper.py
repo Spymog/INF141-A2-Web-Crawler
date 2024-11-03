@@ -151,7 +151,6 @@ def extract_next_links(url, resp):
         if hyperlink:
             raw_hyperlinks.add(hyperlink)
 
-<<<<<<< HEAD
     # Convert raw hyperlinks to absolute links, add them all to a list to be returned
     absolute_links = list()
     for link in raw_hyperlinks:
@@ -159,14 +158,7 @@ def extract_next_links(url, resp):
         absolute_link = urljoin(url, link)
         absolute_link = urldefrag(absolute_link)[0] # Remove any fragments from the end 
         absolute_links.append(absolute_link)
-=======
-    absolute_urls = list()
-    # Convert raw hyperlink to absolute url
-    for link in raw_hyperlinks:
-        processed_link = process_raw_hyperlink(link)
->>>>>>> d8f06b8210f11d4a1a208b0d12cf152d146b71b4
         # TODO: write processed_link's URL only to a file so we can count it later
-        absolute_urls.add(processed_link)
         # TODO: use the soup to get all tokens (across all pages), and keep track of the page with the most number of words
         # TODO: using tokens, find 50 most common words
         # TODO: if processed_link is a new subdomain of uci.edu, add it to a file of subdomains. 
@@ -181,7 +173,7 @@ def extract_next_links(url, resp):
         # if current_parse.hostname:
 
     
-    return list()
+    return absolute_links
 
 
 def is_valid(url):
