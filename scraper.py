@@ -87,7 +87,13 @@ def find_longest(url:str, tokens:list):
     If tokens argument is longer, write it's length and the name of the current url into longest_page.txt 
     '''
     token_count = len(tokens)
-
+    
+    if not os.path.exists('answers/longest_page.txt'):
+            # If it doesn't exist, create an empty file
+            os.makedirs('answers', exist_ok=True)  # Ensure the directory exists
+            with open('answers/longest_page.txt', 'w') as t:
+                pass  # Create the file since 'a' doesn't do it for us. 
+    
     with open('answers/longest_page.txt', 'r') as current_longest:
         lines = current_longest.readlines()
         longest_count = int(lines[0])
