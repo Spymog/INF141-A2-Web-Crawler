@@ -97,7 +97,7 @@ def find_longest(url:str, tokens:list):
     with open('answers/longest_page.txt', 'r') as current_longest:
         lines = current_longest.readlines()
         
-        if(lines[0] == None):
+        if(len(lines) == 0):
             with open('answers/longest_page.txt', 'w') as new_longest:
                 new_longest.write(f'{str(token_count)}\n{url}')
         else:
