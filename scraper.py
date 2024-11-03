@@ -96,12 +96,16 @@ def find_longest(url:str, tokens:list):
     
     with open('answers/longest_page.txt', 'r') as current_longest:
         lines = current_longest.readlines()
-        longest_count = int(lines[0])
-        # longest_url = lines[1] # Maybe don't need
-
-        if token_count > longest_count:
+        
+        if(lines[0] == None):
             with open('answers/longest_page.txt', 'w') as new_longest:
                 new_longest.write(f'{str(token_count)}\n{url}')
+        else:
+            longest_count = int(lines[0])
+            # longest_url = lines[1] # Maybe don't need
+            if token_count > longest_count:
+                with open('answers/longest_page.txt', 'w') as new_longest:
+                    new_longest.write(f'{str(token_count)}\n{url}')
 
 
 def update_token_counts(tokens:list):
