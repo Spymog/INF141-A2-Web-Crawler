@@ -1,8 +1,8 @@
 import re
 import os
 import shelve
+import urllib.robotparser
 from bs4 import BeautifulSoup, SoupStrainer
-
 from urllib.parse import urlparse, urldefrag, urljoin
 from tokenizer import tokenize
 
