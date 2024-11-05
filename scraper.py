@@ -34,8 +34,8 @@ def scraper(url, resp):
                 pass  # Create the file since 'a' doesn't do it for us. 
         
         with open('answers/unique_pages.txt', 'a') as t:
-            if 'ics.uci.edu' in url:
-                t.write(f"{url}\n")
+            # if 'ics.uci.edu' in url:
+            t.write(f"{url}\n")
         links = extract_next_links(url, resp) # Get all links from current url
         return [link for link in links if is_valid(link)] # For each link, check if link will lead to a webpage, if so return it
     else:
@@ -169,25 +169,10 @@ def extract_next_links(url, resp):
     # Convert raw hyperlinks to absolute links, add them all to a list to be returned
     absolute_links = list()
     for link in raw_hyperlinks:
-        # processed_link = process_raw_hyperlink(url, link)
         absolute_link = urljoin(url, link)
         absolute_link = urldefrag(absolute_link)[0] # Remove any fragments from the end 
         absolute_links.append(absolute_link)
-        # TODO: write processed_link's URL only to a file so we can count it later
-        # TODO: use the soup to get all tokens (across all pages), and keep track of the page with the most number of words
-        # TODO: using tokens, find 50 most common words
-        # TODO: if processed_link is a new subdomain of uci.edu, add it to a file of subdomains. 
-            # TODO: sort list alpahbetically and record the # of unique pages in each subdomain, ex. below
-            # vision.ics.uci.edu, 10
-            # hearing.ics.uci.edu, 100
-            # etc. 
 
-        # current_parse = urlparse(link)
-        # if not current_parse.scheme:
-        #     current_parse = current_parse._replace(scheme=f'{parsed_url.scheme}')
-        # if current_parse.hostname:
-
-    
     return absolute_links
 
 
@@ -211,7 +196,7 @@ def is_valid(url):
         
         # Gets the link's path and checks to see if it is a repeating pattern
         path_parts = parsed.path.strip('/').split('/')
-        if len(path_parts) > 1 and len(path_parts) == len(set(path_parts)):
+        if len(path_parts) > 1 and not len(path_parts) == len(set(path_parts)):
             return False
 
         valid_domains = r'((\w*\.)*(ics|cs|informatics|stat)\.uci\.edu)|(today\.uci\.edu\/department\/information_computer_sciences)'
