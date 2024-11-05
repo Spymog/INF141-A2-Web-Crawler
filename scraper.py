@@ -27,6 +27,12 @@ def scraper(url, resp):
 
     if resp.status == 200: # If http status code is 200 (normal response), then continue w/ scraping webpage
         # print('Current Working Directory: ', os.getcwd()) # just checking what the current working directory is 
+        if not os.path.exists('answers/unique_pages.txt'):
+            # If it doesn't exist, create an empty file
+            os.makedirs('answers', exist_ok=True)  # Ensure the directory exists
+            with open('answers/unique_pages.txt', 'w') as t:
+                pass  # Create the file since 'a' doesn't do it for us. 
+        
         with open('answers/unique_pages.txt', 'a') as t:
             if 'ics.uci.edu' in url:
                 t.write(f"{url}\n")
@@ -81,15 +87,25 @@ def find_longest(url:str, tokens:list):
     If tokens argument is longer, write it's length and the name of the current url into longest_page.txt 
     '''
     token_count = len(tokens)
-
+    
+    if not os.path.exists('answers/longest_page.txt'):
+            # If it doesn't exist, create an empty file
+            os.makedirs('answers', exist_ok=True)  # Ensure the directory exists
+            with open('answers/longest_page.txt', 'w') as t:
+                pass  # Create the file since 'a' doesn't do it for us. 
+    
     with open('answers/longest_page.txt', 'r') as current_longest:
         lines = current_longest.readlines()
-        longest_count = int(lines[0])
-        # longest_url = lines[1] # Maybe don't need
-
-        if token_count > longest_count:
+        
+        if(len(lines) == 0):
             with open('answers/longest_page.txt', 'w') as new_longest:
                 new_longest.write(f'{str(token_count)}\n{url}')
+        else:
+            longest_count = int(lines[0])
+            # longest_url = lines[1] # Maybe don't need
+            if token_count > longest_count:
+                with open('answers/longest_page.txt', 'w') as new_longest:
+                    new_longest.write(f'{str(token_count)}\n{url}')
 
 
 def update_token_counts(tokens:list, stop_words):
