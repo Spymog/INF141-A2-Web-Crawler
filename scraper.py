@@ -26,7 +26,7 @@ def scraper(url, resp):
     #     return list() # If webpage can't be reached, return empty list of links.
 
     if resp.status == 200: # If http status code is 200 (normal response), then continue w/ scraping webpage
-        # print('Current Working Directory: ', os.getcwd()) # just checking what the current working directory is 
+
         if not os.path.exists('answers/unique_pages.txt'):
             # If it doesn't exist, create an empty file
             os.makedirs('answers', exist_ok=True)  # Ensure the directory exists
@@ -36,11 +36,13 @@ def scraper(url, resp):
         with open('answers/unique_pages.txt', 'a') as t:
             # if 'ics.uci.edu' in url:
             t.write(f"{url}\n")
+
+
         links = extract_next_links(url, resp) # Get all links from current url
         return [link for link in links if is_valid(link)] # For each link, check if link will lead to a webpage, if so return it
     else:
         print(f"Can't read url: '{url}',\nStatus code: {resp.status_code}") # Error message if status code isn't 200
-        raise
+        return []
     
 
 # -- MAY NOT ACTUALLY NEED --
@@ -193,16 +195,32 @@ def is_valid(url):
         parsed = urlparse(url)
         if parsed.scheme not in set(["http", "https"]):
             return False
-        
-        # Gets the link's path and checks to see if it is a repeating pattern
-        path_parts = parsed.path.strip('/').split('/')
-        if len(path_parts) > 1 and not len(path_parts) == len(set(path_parts)):
-            return False
 
         valid_domains = r'((\w*\.)*(ics|cs|informatics|stat)\.uci\.edu)|(today\.uci\.edu\/department\/information_computer_sciences)'
 
         # Checks to see if domain and path are within the domain range for the assignment
         if not re.match(valid_domains, parsed.hostname + parsed.path):
+            return False
+        
+        # Check to see if the url has been crawled already
+        urls = list()
+        try:
+            found_pages = open('answers/unique_pages.txt', 'r')
+        except FileNotFoundError:
+            open('answers/unique_pages.txt', 'w')
+        else:
+            with found_pages:
+                lines = found_pages.readlines()
+                for line in lines:
+                    urls.append(line.strip('\n'))
+
+        for link in urls:
+            if url in link:
+                return False
+
+         # Gets the link's path and checks to see if it is a repeating pattern
+        path_parts = parsed.path.strip('/').split('/')
+        if len(path_parts) > 1 and not len(path_parts) == len(set(path_parts)):
             return False
         
         return not re.match(
