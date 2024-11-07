@@ -2,6 +2,7 @@ import re
 import os
 import shelve
 import urllib.robotparser
+import tldextract
 from bs4 import BeautifulSoup, SoupStrainer
 from urllib.parse import urlparse, urldefrag, urljoin
 from tokenizer import tokenize
@@ -17,15 +18,21 @@ THINGS TO ANSWER:
 
 
 def scraper(url, resp):
-    # # Base code for reference
-    # links = extract_next_links(url, resp)
-    # return [link for link in links if is_valid(link)]
-
     # # *Experimental* - Another way to check http status code 
     # if resp.status > 399: # If http status code is above 399, i.e. 400, 401, 403, 404, then the webpage could not be reached.
     #     return list() # If webpage can't be reached, return empty list of links.
 
+    # valid_domains:
+    # *.ics.uci.edu/*
+    # *.cs.uci.edu/*
+    # *.informatics.uci.edu/*
+    # *.stat.uci.edu/*
+    # today.uci.edu/department/information_computer_sciences/*
+
     if resp.status == 200: # If http status code is 200 (normal response), then continue w/ scraping webpage
+
+        # parsed = urlparse(url)
+        # subdomain = parsed.hostname.split('.')
 
         if not os.path.exists('answers/unique_pages.txt'):
             # If it doesn't exist, create an empty file
@@ -35,45 +42,14 @@ def scraper(url, resp):
         
         with open('answers/unique_pages.txt', 'a') as t:
             # if 'ics.uci.edu' in url:
-            t.write(f"{url}\n")
+            t.write(f"{url}\n") # resp.url returns the ACTUAL url
 
 
         links = extract_next_links(url, resp) # Get all links from current url
         return [link for link in links if is_valid(link)] # For each link, check if link will lead to a webpage, if so return it
     else:
-        print(f"Can't read url: '{url}',\nStatus code: {resp.status_code}") # Error message if status code isn't 200
+        print(f"Can't read url: '{url}',\nStatus code: {resp.status_code}, Error: {resp.error}") # Error message if status code isn't 200
         return []
-    
-
-# -- MAY NOT ACTUALLY NEED --
-# def process_raw_hyperlink(url, hyperlink):
-#     parsed_url = urlparse(url)
-#     parsed_link = urlparse(hyperlink)
-
-#     if not parsed_link.scheme:
-#         parsed_link = parsed_link._replace(scheme=parsed_url.scheme)
-#     elif parsed_link.scheme not in set(["http", "https"]):
-#         return
-    
-#     if not parsed_link.netloc:
-
-#         if parsed_url.hostname in parsed_link.path:
-#             new_path = parsed_link.path.replace(parsed_url.hostname, '', 1)
-#             parsed_link = parsed_link._replace(netloc=parsed_url.hostname, path=new_path)
-#         elif parsed_link.path.startswith('/'):
-#             parsed_link = parsed_link._replace(netloc=parsed_url.hostname)
-#         else:
-#             current_path = parsed_url.hostname + '/' + parsed_url.path.lstrip('/')
-#             parsed_link = parsed_link._replace(netloc=current_path)
-#     else:
-#         parsed_link = parsed_link._replace(netloc=parsed_link.hostname)
-
-#     if parsed_link.path == '/':
-#         parsed_link = parsed_link._replace(path='')
-
-#     parsed_link = urlparse(urldefrag(parsed_link.geturl())[0])
-
-#     return parsed_link.geturl()
 
 
 def find_longest(url:str, tokens:list):
@@ -147,9 +123,11 @@ def extract_next_links(url, resp):
     webpage_text = soup.get_text()
     tokens = tokenize(webpage_text)
 
+    # Question 2)
     # Get all tokens, use to find if current webpage currently has the most words
     find_longest(url, tokens)
     
+    # Question 3)
     # Count frequencies of all found tokens and update total count of all tokens
     stop_words = "a about above after again against all am an and any are aren't as at be because been before being below between both \
         but by can't cannot could couldn't did didn't do does doesn't doing don't down during each few for from further had hadn't has hasn't \
@@ -162,15 +140,15 @@ def extract_next_links(url, resp):
     update_token_counts(tokens, stop_words)
 
     # Find all the a tags in the html, add them to the set of raw hyperlinks  
-    raw_hyperlinks = set() 
+    raw_links = set() 
     for tag in soup.find_all('a'):
-        hyperlink = tag.get('href')
-        if hyperlink:
-            raw_hyperlinks.add(hyperlink)
+        link = tag.get('href')
+        if link:
+            raw_links.add(link)
 
     # Convert raw hyperlinks to absolute links, add them all to a list to be returned
     absolute_links = list()
-    for link in raw_hyperlinks:
+    for link in raw_links:
         absolute_link = urljoin(url, link)
         absolute_link = urldefrag(absolute_link)[0] # Remove any fragments from the end 
         absolute_links.append(absolute_link)
