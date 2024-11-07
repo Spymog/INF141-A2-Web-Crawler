@@ -42,7 +42,7 @@ def scraper(url, resp):
         
         with open('answers/unique_pages.txt', 'a') as t:
             # if 'ics.uci.edu' in url:
-            t.write(f"{url}\n") # resp.url returns the ACTUAL url
+            t.write(f"{url}\n")
 
 
         links = extract_next_links(url, resp) # Get all links from current url
@@ -125,7 +125,7 @@ def extract_next_links(url, resp):
 
     # Question 2)
     # Get all tokens, use to find if current webpage currently has the most words
-    find_longest(url, tokens)
+    find_longest(resp.url, tokens)
     
     # Question 3)
     # Count frequencies of all found tokens and update total count of all tokens
@@ -149,7 +149,7 @@ def extract_next_links(url, resp):
     # Convert raw hyperlinks to absolute links, add them all to a list to be returned
     absolute_links = list()
     for link in raw_links:
-        absolute_link = urljoin(url, link)
+        absolute_link = urljoin(resp.url, link)
         absolute_link = urldefrag(absolute_link)[0] # Remove any fragments from the end 
         absolute_links.append(absolute_link)
 
@@ -181,7 +181,7 @@ def is_valid(url):
             return False
         
         # Check to see if the url has been crawled already
-        urls = list()
+        crawled_urls = list()
         try:
             found_pages = open('answers/unique_pages.txt', 'r')
         except FileNotFoundError:
@@ -190,10 +190,10 @@ def is_valid(url):
             with found_pages:
                 lines = found_pages.readlines()
                 for line in lines:
-                    urls.append(line.strip('\n'))
+                    crawled_urls.append(line.strip('\n'))
 
-        for link in urls:
-            if url in link:
+        for link in crawled_urls:
+            if url == link:
                 return False
 
          # Gets the link's path and checks to see if it is a repeating pattern
