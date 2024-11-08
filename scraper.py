@@ -2,7 +2,7 @@ import re
 import os
 import shelve
 import urllib.robotparser
-import tldextract
+# import tldextract
 from bs4 import BeautifulSoup, SoupStrainer
 from urllib.parse import urlparse, urldefrag, urljoin
 from tokenizer import tokenize
