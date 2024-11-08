@@ -6,6 +6,7 @@ import tldextract
 from bs4 import BeautifulSoup, SoupStrainer
 from urllib.parse import urlparse, urldefrag, urljoin
 from tokenizer import tokenize
+from collections import defaultdict
 
 '''
 THINGS TO ANSWER:
@@ -31,18 +32,38 @@ def scraper(url, resp):
 
     if resp.status == 200: # If http status code is 200 (normal response), then continue w/ scraping webpage
 
-        # parsed = urlparse(url)
-        # subdomain = parsed.hostname.split('.')
+        actual_url = resp.url # url can be one of possibly many urls for --> resp.url, so this gets the actual url
+        # Assumptions: absolute url, no fragments
+        parsed_actual = urlparse(actual_url) # scheme://netloc/path;parameters?query#fragment
+        hostname = parsed_actual.hostname
+        path = parsed_actual.path
+        subdomain = '.'.join(hostname.split('.')[:-2])
 
-        if not os.path.exists('answers/unique_pages.txt'):
-            # If it doesn't exist, create an empty file
-            os.makedirs('answers', exist_ok=True)  # Ensure the directory exists
-            with open('answers/unique_pages.txt', 'w') as t:
-                pass  # Create the file since 'a' doesn't do it for us. 
-        
-        with open('answers/unique_pages.txt', 'a') as t:
-            # if 'ics.uci.edu' in url:
-            t.write(f"{url}\n")
+        # Shelve dict has structure { 'subdomain' : { 'actual_url : set(urls) } } 
+        with shelve.open('answers/scraped_pages') as scraped_pages:
+            if subdomain in scraped_pages: # Search for url's subdomain
+                if actual_url in scraped_pages[subdomain]: # If subdomain found, see if url has been scraped already
+                    return [] # If so, don't need to get page's links again, return empty list
+            
+            # If the url is not found to already have been scraped, 
+            # then check if subdomain has even been visited before, if not create dict for it
+            if subdomain not in scraped_pages:
+                scraped_pages[subdomain] = defaultdict(set)
+            # Since an empty list would have been returned if the actual_url had been found in the scraped_pages,
+            # safe to assume that url has not been crawled before, add it's acutal_url to the inner dict, with url as one of it's values
+            scraped_pages[subdomain][actual_url].add(url)
+
+
+        # # # Question 1 & 4
+        # if not os.path.exists('answers/unique_pages.txt'):
+        #     # If it doesn't exist, create an empty file
+        #     os.makedirs('answers', exist_ok=True)  # Ensure the directory exists
+        #     with open('answers/unique_pages.txt', 'w') as t:
+        #         pass  # Create the file since 'a' doesn't do it for us. 
+
+        # with open('answers/unique_pages.txt', 'a') as t:
+        #     # if 'ics.uci.edu' in url:
+        #     t.write(f"{url}\n")
 
 
         links = extract_next_links(url, resp) # Get all links from current url
@@ -120,8 +141,8 @@ def extract_next_links(url, resp):
     soup = BeautifulSoup(resp.raw_response.content, 'html.parser') 
 
     # Extract the text of the current webpage and convert to tokens
-    webpage_text = soup.get_text()
-    tokens = tokenize(webpage_text)
+    page_text = soup.get_text()
+    tokens = tokenize(page_text)
 
     # Question 2)
     # Get all tokens, use to find if current webpage currently has the most words
@@ -129,6 +150,7 @@ def extract_next_links(url, resp):
     
     # Question 3)
     # Count frequencies of all found tokens and update total count of all tokens
+    # Stop words are given below and should not be counted 
     stop_words = "a about above after again against all am an and any are aren't as at be because been before being below between both \
         but by can't cannot could couldn't did didn't do does doesn't doing don't down during each few for from further had hadn't has hasn't \
         have haven't having he he'd he'll he's her here here's hers herself him himself his how how's i i'd i'll i'm i've if in into is isn't \
@@ -181,20 +203,32 @@ def is_valid(url):
             return False
         
         # Check to see if the url has been crawled already
-        crawled_urls = list()
-        try:
-            found_pages = open('answers/unique_pages.txt', 'r')
-        except FileNotFoundError:
-            open('answers/unique_pages.txt', 'w')
-        else:
-            with found_pages:
-                lines = found_pages.readlines()
-                for line in lines:
-                    crawled_urls.append(line.strip('\n'))
+        hostname = parsed.hostname
+        path = parsed.path
+        subdomain = '.'.join(hostname.split('.')[:-2])
+        
+        with shelve.open('answers/scraped_pages') as scraped_pages:
+            if subdomain in scraped_pages:
+                for u in set().union(*(scraped_pages[subdomain].values())):
+                    if url == u:
+                        return False
+        # crawled_urls = list()
+        # try:
+        #     found_pages = open('answers/unique_pages.txt', 'r')
+        # except FileNotFoundError:
+        #     open('answers/unique_pages.txt', 'w')
+        # else:
+        #     with found_pages:
+        #         lines = found_pages.readlines()
+        #         for line in lines:
+        #             crawled_urls.append(line.strip('\n'))
 
-        for link in crawled_urls:
-            if url == link:
-                return False
+        # for link in crawled_urls:
+        #     if url == link:
+        #         return False
+
+        
+
 
          # Gets the link's path and checks to see if it is a repeating pattern
         path_parts = parsed.path.strip('/').split('/')
