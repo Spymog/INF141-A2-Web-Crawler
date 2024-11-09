@@ -18,7 +18,7 @@ class Worker(Thread):
         super().__init__(daemon=True)
         
     def run(self):
-        counter = 10
+        counter = -1
         while True and counter != 0:
             tbd_url = self.frontier.get_tbd_url()
             if not tbd_url:
@@ -33,4 +33,4 @@ class Worker(Thread):
                 self.frontier.add_url(scraped_url)
             self.frontier.mark_url_complete(tbd_url)
             time.sleep(self.config.time_delay)
-            counter -= 1
+            # counter -= 1
