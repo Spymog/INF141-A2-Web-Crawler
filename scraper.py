@@ -181,6 +181,9 @@ def extract_next_links(url, resp):
         # If soft 404, return empty list
         return []
 
+
+    
+
 def is_valid(url):
     # Decide whether to crawl this url or not. 
     # If you decide to crawl it, return True; otherwise return False.
@@ -230,15 +233,24 @@ def is_valid(url):
         if len(path_parts) > 1 and not len(path_parts) == len(set(path_parts)):
             return False
         
+        # return not re.match(
+        #     r".*\.(css|js|bmp|gif|jpe?g|ico"
+        #     + r"|png|tiff?|mid|mp2|mp3|mp4"
+        #     + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
+        #     + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
+        #     + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
+        #     + r"|epub|dll|cnf|tgz|sha1"
+        #     + r"|thmx|mso|arff|rtf|jar|csv"
+        #     + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
         return not re.match(
-            r".*\.(css|js|bmp|gif|jpe?g|ico"
-            + r"|png|tiff?|mid|mp2|mp3|mp4"
-            + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
-            + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
-            + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
-            + r"|epub|dll|cnf|tgz|sha1"
-            + r"|thmx|mso|arff|rtf|jar|csv"
-            + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
+        r".*\.(css|js|bmp|gif|jpe?g|ico"
+        + r"|png|tiff?|mid|mp2|mp3|mp4"
+        + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
+        + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
+        + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
+        + r"|epub|dll|cnf|tgz|sha1"
+        + r"|thmx|mso|arff|rtf|jar|csv"
+        + r"|rm|smil|wmv|swf|wma|zip|rar|gz|img|jpg|png|gif)$", parsed.path.lower())
 
     except TypeError:
         print ("TypeError for ", parsed)
