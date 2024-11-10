@@ -27,3 +27,20 @@
 #     parsed_link = urlparse(urldefrag(parsed_link.geturl())[0])
 
 #     return parsed_link.geturl()
+
+# ----------------------------------
+
+        # crawled_urls = list()
+        # try:
+        #     found_pages = open('answers/unique_pages.txt', 'r')
+        # except FileNotFoundError:
+        #     open('answers/unique_pages.txt', 'w')
+        # else:
+        #     with found_pages:
+        #         lines = found_pages.readlines()
+        #         for line in lines:
+        #             crawled_urls.append(line.strip('\n'))
+
+        # for link in crawled_urls:
+        #     if url == link:
+        #         return False

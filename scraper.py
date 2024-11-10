@@ -205,36 +205,28 @@ def is_valid(url):
         if not re.match(valid_domains, parsed.hostname + parsed.path):
             return False
         
-        # Check to see if the url has been crawled already
+        # URL parts: scheme://netloc/path;parameters?query#fragment
+        # netloc: user:pass@hostname:portnumber
         hostname = parsed.hostname
         path = parsed.path
+        query = parsed.query
+
         subdomain = '.'.join(hostname.split('.')[:-2])
+        path_parts = path.strip('/').split('/')
         
+        # Check to see if the url has been crawled already
         with shelve.open('answers/scraped_pages') as scraped_pages:
             if subdomain in scraped_pages:
                 for u in set().union(*(scraped_pages[subdomain].values())):
                     if url == u:
                         return False
-        # crawled_urls = list()
-        # try:
-        #     found_pages = open('answers/unique_pages.txt', 'r')
-        # except FileNotFoundError:
-        #     open('answers/unique_pages.txt', 'w')
-        # else:
-        #     with found_pages:
-        #         lines = found_pages.readlines()
-        #         for line in lines:
-        #             crawled_urls.append(line.strip('\n'))
-
-        # for link in crawled_urls:
-        #     if url == link:
-        #         return False
-
-        
-
+                    
+        # Check for calendar traps
+        calendar_paths = {'events', 'schedule', 'news', 'page', 'appointments', 'date'}
+        if any(p in calendar_paths for p in path_parts):
+            return False
 
          # Gets the link's path and checks to see if it is a repeating pattern
-        path_parts = parsed.path.strip('/').split('/')
         if len(path_parts) > 1 and not len(path_parts) == len(set(path_parts)):
             return False
         
