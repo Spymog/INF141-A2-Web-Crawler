@@ -180,8 +180,6 @@ def extract_next_links(url, resp):
     else:
         # If soft 404, return empty list
         return []
-
-
     
 
 def is_valid(url):
@@ -224,6 +222,15 @@ def is_valid(url):
                     if url == u:
                         return False
                     
+        # Regex Trap Detection
+        filters = [
+            '^https://intranet.ics.uci.edu/doku.php/wiki'
+        ]
+
+        for filter in filter:
+            if re.match(filter, url):
+                return False
+
         # Check for calendar traps
         calendar_paths = {'events', 'schedule', 'news', 'page', 'appointments', 'date'}
         if any(p in calendar_paths for p in path_parts):
