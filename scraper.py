@@ -200,6 +200,10 @@ def is_valid(url):
         if parsed.scheme not in set(["http", "https"]):
             return False
 
+        # Check if link has a hostname
+        if not parsed.hostname:
+            return False
+
         valid_domains = r'((\w*\.)*(ics|cs|informatics|stat)\.uci\.edu)|(today\.uci\.edu\/department\/information_computer_sciences)'
 
         # Checks to see if domain and path are within the domain range for the assignment
@@ -224,7 +228,11 @@ def is_valid(url):
                     
         # Regex Trap Detection
         filters = [
-            '^https://intranet.ics.uci.edu/doku.php/wiki'
+            r'^https://intranet.ics.uci.edu/doku.php/wiki',
+            r'^https://wiki.ics.uci.edu/doku.php',
+            r'^https://ics.uci.edu/people/\?.+',
+            r'^https://swiki.ics.uci.edu/doku.php/services:datacenter:cs\?.+',
+            r'^.+/doku.php/[^?]*\?.+'
         ]
 
         for filter in filters:
@@ -249,6 +257,7 @@ def is_valid(url):
         #     + r"|epub|dll|cnf|tgz|sha1"
         #     + r"|thmx|mso|arff|rtf|jar|csv"
         #     + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
+
         return not re.match(
         r".*\.(css|js|bmp|gif|jpe?g|ico"
         + r"|png|tiff?|mid|mp2|mp3|mp4"
@@ -257,7 +266,7 @@ def is_valid(url):
         + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
         + r"|epub|dll|cnf|tgz|sha1"
         + r"|thmx|mso|arff|rtf|jar|csv"
-        + r"|rm|smil|wmv|swf|wma|zip|rar|gz|img|jpg|png|gif|mpg)$", parsed.path.lower())
+        + r"|rm|smil|wmv|swf|wma|zip|rar|gz|img|jpg|png|gif|mpg|ppsx|txt|pdf|odc)$", parsed.path.lower())
 
     except TypeError:
         print ("TypeError for ", parsed)
