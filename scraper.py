@@ -1,9 +1,7 @@
 import re
 import os
 import shelve
-import urllib.robotparser
-# import tldextract
-from bs4 import BeautifulSoup, SoupStrainer
+from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urldefrag, urljoin
 from tokenizer import tokenize
 from collections import defaultdict
@@ -52,19 +50,6 @@ def scraper(url, resp):
             # Since an empty list would have been returned if the actual_url had been found in the scraped_pages,
             # safe to assume that url has not been crawled before, add it's acutal_url to the inner dict, with url as one of it's values
             scraped_pages[subdomain][actual_url].add(url)
-
-
-        # # # Question 1 & 4
-        # if not os.path.exists('answers/unique_pages.txt'):
-        #     # If it doesn't exist, create an empty file
-        #     os.makedirs('answers', exist_ok=True)  # Ensure the directory exists
-        #     with open('answers/unique_pages.txt', 'w') as t:
-        #         pass  # Create the file since 'a' doesn't do it for us. 
-
-        # with open('answers/unique_pages.txt', 'a') as t:
-        #     # if 'ics.uci.edu' in url:
-        #     t.write(f"{url}\n")
-
 
         links = extract_next_links(url, resp) # Get all links from current url
         return [link for link in links if is_valid(link)] # For each link, check if link will lead to a webpage, if so return it
@@ -247,16 +232,14 @@ def is_valid(url):
          # Gets the link's path and checks to see if it is a repeating pattern
         if len(path_parts) > 1 and not len(path_parts) == len(set(path_parts)):
             return False
-        
-        # return not re.match(
-        #     r".*\.(css|js|bmp|gif|jpe?g|ico"
-        #     + r"|png|tiff?|mid|mp2|mp3|mp4"
-        #     + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
-        #     + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
-        #     + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
-        #     + r"|epub|dll|cnf|tgz|sha1"
-        #     + r"|thmx|mso|arff|rtf|jar|csv"
-        #     + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
+
+        # Robots.txt
+        # root = parsed.scheme + r'://' + hostname
+        # rp = robotparser.RobotFileParser()
+        # rp.set_url(root + r'/robots.txt')
+        # rp.read()
+        # if not rp.can_fetch('*', url):
+        #     return False
 
         return not re.match(
         r".*\.(css|js|bmp|gif|jpe?g|ico"
@@ -266,7 +249,8 @@ def is_valid(url):
         + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
         + r"|epub|dll|cnf|tgz|sha1"
         + r"|thmx|mso|arff|rtf|jar|csv"
-        + r"|rm|smil|wmv|swf|wma|zip|rar|gz|img|jpg|png|gif|mpg|ppsx|txt|pdf|odc)$", parsed.path.lower())
+        + r"|rm|smil|wmv|swf|wma|zip|rar|gz|img|jpg|png|gif|mpg|ppsx|txt"
+        + r"|pdf|odc|apk|bam|war|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)$", parsed.path.lower())
 
     except TypeError:
         print ("TypeError for ", parsed)
